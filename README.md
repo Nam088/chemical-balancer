@@ -13,13 +13,13 @@ A lightweight TypeScript library to balance chemical equations using linear alge
 ## Installation
 
 ```bash
-npm install chemical-equation-balancer
+npm install @nam088/chemical-balancer
 ```
 
 ## Usage
 
 ```typescript
-import { ChemicalBalancer } from 'chemical-equation-balancer';
+import { ChemicalBalancer } from '@nam088/chemical-balancer';
 
 const result = ChemicalBalancer.balance('H2 + O2 -> H2O');
 console.log(result);
