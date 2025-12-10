@@ -22,7 +22,7 @@
     "typescript"
   ],
   "author": "Nam Nguyen <nam088>",
-  "license": "ISC",
+  "license": "MIT",
   "sideEffects": false,
   "type": "commonjs",
   "devDependencies": {
