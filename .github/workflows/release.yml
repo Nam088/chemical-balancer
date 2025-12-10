@@ -6,9 +6,6 @@ on:
       - main
       - beta
       - develop
-    paths-ignore:
-      - '**.md'
-      - '.gitignore'
 
 jobs:
   test:
