@@ -2,6 +2,12 @@ import Fraction from 'fraction.js';
 import { ElementCounts } from './types';
 
 /**
+ * Maximum weight to search when combining basis vectors.
+ * Higher values allow finding more solutions but increase computation time exponentially.
+ */
+const MAX_WEIGHT_SEARCH = 6;
+
+/**
  * Solves the matrix equation Ax = 0 to find stoichiometric coefficients.
  */
 export class MathSolver {
@@ -37,8 +43,6 @@ export class MathSolver {
     // The system is Ax = 0.
     // We expect (numCols - 1) pivots. The last column is typically free.
     // If rank < numCols - 1, we have multiple free variables (basis vectors).
-    
-    const solution = new Array(numCols).fill(new Fraction(0));
     
     // Identify pivot columns
     const pivotCols: number[] = [];
@@ -94,7 +98,11 @@ export class MathSolver {
     const normalizedBasis = basisVectors.map(v => v); // No-op if already 1 or 0, but can ensure positive leader?
     // Actually, basis vectors from RREF might have negative components.
     
-    // Recursive helper to test combinations of weights
+    /**
+     * Recursively search for a linear combination of basis vectors
+     * that yields all non-negative coefficients.
+     * Uses small integer weights (1 to MAX_WEIGHT_SEARCH) to combine vectors.
+     */
     const searchWeights = (index: number, currentVec: Fraction[]) => {
         if (index === basisVectors.length) {
             // Check if valid (all components non-negative)
@@ -114,8 +122,8 @@ export class MathSolver {
             return;
         }
         
-        // Try weights 1 to 6
-        for (let w = 1; w <= 6; w++) {
+        // Try weights 1 to MAX_WEIGHT_SEARCH
+        for (let w = 1; w <= MAX_WEIGHT_SEARCH; w++) {
             const weight = new Fraction(w);
             const weightedBasis = basisVectors[index].map(v => v.mul(weight));
             const nextVec = currentVec.map((v, i) => v.add(weightedBasis[i]));

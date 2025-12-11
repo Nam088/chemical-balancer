@@ -1,5 +1,6 @@
 # Source code (we publish compiled js/d.ts in dist)
 src/
+examples/
 
 # Config files
 tsconfig.json

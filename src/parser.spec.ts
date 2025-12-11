@@ -13,7 +13,8 @@ describe('Parser', () => {
   });
 
   test('should handle nested parentheses', () => {
-    expect(Parser.parseFormula('A(B(C)2)3')).toEqual({ A: 1, B: 3, C: 6 });
+    // Using real elements to test nested parentheses: K(Fe(C)2)3 -> K: 1, Fe: 3, C: 6
+    expect(Parser.parseFormula('K(Fe(C)2)3')).toEqual({ K: 1, Fe: 3, C: 6 });
   });
 
   test('should normalize whitespace', () => {
@@ -25,6 +26,11 @@ describe('Parser', () => {
     expect(() => Parser.parseFormula('h2o')).toThrow(/Invalid characters/); // lowercase first
     expect(() => Parser.parseFormula('H2$O')).toThrow(/Invalid characters/);
     expect(() => Parser.parseFormula('H2O!')).toThrow(/Invalid characters/);
+  });
+
+  test('should throw error for unknown elements', () => {
+    expect(() => Parser.parseFormula('Xx2O')).toThrow(/Unknown element 'Xx'/);
+    expect(() => Parser.parseFormula('H2Zz')).toThrow(/Unknown element 'Zz'/);
   });
   
   test('should throw error for malformed parentheses', () => {

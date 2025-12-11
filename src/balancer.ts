@@ -1,28 +1,66 @@
 import { Parser } from './parser';
 import { MathSolver } from './solver';
 import { BalancedResult, ElementCounts } from './types';
+import { t } from './i18n';
 
+/**
+ * Main class for balancing chemical equations.
+ * Uses Gaussian elimination to find stoichiometric coefficients.
+ *
+ * @example
+ * ```typescript
+ * import { ChemicalBalancer } from '@nam088/chemical-balancer';
+ *
+ * // Simple equation
+ * const result = ChemicalBalancer.balance('H2 + O2 -> H2O');
+ * console.log(result.balancedString); // '2H2 + O2 -> 2H2O'
+ *
+ * // Complex organic combustion
+ * const result2 = ChemicalBalancer.balance('C6H12O6 -> C2H5OH + CO2');
+ * console.log(result2.balancedString); // 'C6H12O6 -> 2C2H5OH + 2CO2'
+ * ```
+ */
 export class ChemicalBalancer {
   /**
    * Balances a chemical equation string.
-   * Input: "H2 + O2 -> H2O"
+   *
+   * @param equation - The chemical equation to balance.
+   *   Supports separators: `->`, `=>`, `=`, `→`, `⇌`
+   *   Supports parentheses: `Ca(OH)2`, `(NH4)2SO4`
+   *   Supports hydrates: `CuSO4.5H2O`
+   *   Supports ionic charges: `Fe^3+`, `e-`
+   *
+   * @returns A {@link BalancedResult} object containing:
+   *   - `status`: 'success' or 'error'
+   *   - `coefficients`: Map of molecule to its coefficient
+   *   - `balancedString`: The balanced equation string
+   *   - `message`: Error message if status is 'error'
+   *   - `debug`: Detailed parsing and balance verification info
+   *
+   * @example
+   * ```typescript
+   * const result = ChemicalBalancer.balance('Fe + O2 -> Fe2O3');
+   * // result.status === 'success'
+   * // result.balancedString === '4Fe + 3O2 -> 2Fe2O3'
+   * // result.coefficients === { Fe: 4, O2: 3, Fe2O3: 2 }
+   * ```
    */
   static balance(equation: string): BalancedResult {
     try {
         if (!equation || equation.trim() === '') {
-            throw new Error('Empty equation');
+            throw new Error(t('error.empty_equation'));
         }
 
         // Split reactants and products
         // Support "->" or "=" or "=>" or "→" or "⇌"
         const separator = equation.match(/->|=>|=|→|⇌/);
         if (!separator) {
-             throw new Error('Invalid equation syntax: missing separator (->, =>, =)');
+             throw new Error(t('error.missing_separator'));
         }
 
         const parts = equation.split(separator[0]);
         if (parts.length !== 2) {
-             throw new Error('Invalid equation syntax: multiple separators found');
+             throw new Error(t('error.multiple_separators'));
         }
 
         const reactantsStr = parts[0];
@@ -32,8 +70,13 @@ export class ChemicalBalancer {
         const userCoefficients: Record<string, number> = {};
 
         // Parse molecules
+        // Use a regex to split by "+" but ONLY if it is a separator.
+        // Rule: A "+" is a separator if it is surrounded by spaces (" + ") or is at start/end (unlikely).
+        // If we just split by " + " (space plus space), we are safe for "Fe^3+ + e-".
+        // But we must support "A + B" (one space).
+        // Let's split by regex: /\s+\+\s+/
         const parseSide = (sideStr: string): { molecules: string[]; counts: ElementCounts[] } => {
-            const molecules = sideStr.split('+').map(s => {
+            const molecules = sideStr.split(/\s+\+\s+/).map(s => {
                 let m = s.trim();
                 
                 // Extract and capture coeff
@@ -59,7 +102,7 @@ export class ChemicalBalancer {
         const productsData = parseSide(productsStr);
 
         if (reactantsData.molecules.length === 0 || productsData.molecules.length === 0) {
-            throw new Error('Missing reactants or products');
+            throw new Error(t('error.missing_reactants_or_products'));
         }
 
         // Validate elements conservation
@@ -68,19 +111,24 @@ export class ChemicalBalancer {
         const pElements = getElements(productsData.counts);
 
         // Check for missing elements
-        for (const el of rElements) {
-            if (!pElements.has(el)) {
-                 throw new Error(`Element '${el}' is present in reactants but missing in products`);
-            }
+        // Note: Charge '_Q' is handled implicitly by MathSolver if present in uniqueElements.
+        // We skip strict presence check for '_Q' because a neutral side won't have it explicitly.
+        
+        const allElementsUnion = new Set([...rElements, ...pElements]);
+        
+        for (const el of allElementsUnion) {
+             if (el === '_Q') continue; 
+             
+             if (!rElements.has(el)) {
+                 throw new Error(t('error.element_missing_in_reactants', { element: el }));
+             }
+             if (!pElements.has(el)) {
+                 throw new Error(t('error.element_missing_in_products', { element: el }));
+             }
         }
-        for (const el of pElements) {
-            if (!rElements.has(el)) {
-                 throw new Error(`Element '${el}' is present in products but missing in reactants`);
-            }
-        }
-
-        const allElements = Array.from(rElements).sort();
-
+        
+        const allElements = Array.from(allElementsUnion).sort();
+        
         // Solve
         const solveResult = MathSolver.solve(reactantsData.counts, productsData.counts);
 
@@ -189,10 +237,10 @@ export class ChemicalBalancer {
             }
         };
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         return {
             status: 'error',
-            message: err.message
+            message: err instanceof Error ? err.message : String(err)
         };
     }
   }
