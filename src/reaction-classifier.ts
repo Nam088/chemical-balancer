@@ -1,6 +1,7 @@
 import { Parser } from './parser';
 import { ElementCounts } from './types';
 import { t, MessageKey } from './i18n';
+import { calculateOxidationStates } from './oxidation-state';
 
 /**
  * Types of chemical reactions.
@@ -227,8 +228,52 @@ function hasOxidationChange(
   reactants: { formula: string; elements: ElementCounts }[],
   products: { formula: string; elements: ElementCounts }[]
 ): boolean {
-  // Simple check: if O2 is involved or elements appear in different oxidation states
+  // Get all elements that appear in both reactants and products
+  const allElements = new Set<string>();
+  
+  for (const r of reactants) {
+    for (const el of Object.keys(r.elements)) {
+      if (el !== '_Q') allElements.add(el);
+    }
+  }
+
+  // For each element, compare oxidation states between reactants and products
+  for (const element of allElements) {
+    // Find reactant containing this element
+    const reactantWithElement = reactants.find(r => element in r.elements);
+    if (!reactantWithElement) continue;
+
+    // Find product containing this element
+    const productWithElement = products.find(p => element in p.elements);
+    if (!productWithElement) continue;
+
+    try {
+      const reactantStates = calculateOxidationStates(reactantWithElement.formula);
+      const productStates = calculateOxidationStates(productWithElement.formula);
+
+      if (reactantStates.success && productStates.success) {
+        const reactantState = reactantStates.oxidationStates[element];
+        const productState = productStates.oxidationStates[element];
+
+        // If oxidation state changed, it's a redox reaction
+        if (reactantState !== undefined && productState !== undefined && 
+            Math.abs(reactantState - productState) > 0.01) {
+          return true;
+        }
+      }
+    } catch {
+      // If we can't calculate, fall back to simple check
+    }
+  }
+
+  // Fallback: check for common redox indicators
   const hasO2 = reactants.some(r => r.formula === 'O2');
   const hasH2 = reactants.some(r => r.formula === 'H2');
-  return hasO2 || hasH2;
+  const hasMetalReactant = reactants.some(r => 
+    Object.keys(r.elements).length === 1 && 
+    !['O', 'H', 'N', 'C', 'S', 'P', 'F', 'Cl', 'Br', 'I'].includes(Object.keys(r.elements)[0])
+  );
+
+  return (hasO2 || hasH2) && hasMetalReactant;
 }
+

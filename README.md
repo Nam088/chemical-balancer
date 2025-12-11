@@ -1,15 +1,22 @@
 # Chemical Equation Balancer
 
-A lightweight TypeScript library for chemistry calculations: equation balancing, molar mass, stoichiometry, and more.
+A comprehensive TypeScript library for chemistry calculations: equation balancing, molar mass, stoichiometry, gas laws, pH, and more.
 
 ## Features
 
 - **Balance Equations** - Using Gaussian elimination
-- **Molar Mass Calculator** - All 118 elements
-- **Stoichiometry** - Mol/gram conversions
+- **Molar Mass Calculator** - All 118 elements with detailed breakdown
+- **Stoichiometry** - Mol/gram conversions with step-by-step solutions
 - **Limiting Reagent** - Find what runs out first
 - **Reaction Classifier** - Combustion, acid-base, redox, etc.
+- **Oxidation States** - Calculate oxidation numbers for compounds
+- **Redox Balancer** - Balance redox reactions with half-reaction method
+- **Empirical/Molecular Formula** - Calculate from composition data
+- **Gas Laws** - Ideal gas law (PV=nRT) and combined gas law
+- **Concentration** - Molarity, molality, dilutions
+- **pH Calculator** - Strong/weak acids and bases, buffers
 - **State Annotations** - Support for `(s)`, `(l)`, `(g)`, `(aq)`
+- **i18n** - English and Vietnamese support
 
 ## Installation
 
@@ -31,11 +38,88 @@ console.log(result.balancedString); // '4Fe + 3O2 -> 2Fe2O3'
 ### Calculate Molar Mass
 
 ```typescript
-import { calculateMolarMass } from '@nam088/chemical-balancer';
+import { calculateMolarMass, calculateMolarMassDetailed } from '@nam088/chemical-balancer';
 
 calculateMolarMass('H2O');     // 18.015
 calculateMolarMass('C6H12O6'); // 180.16
-calculateMolarMass('NaCl');    // 58.44
+
+// With detailed breakdown
+const detailed = calculateMolarMassDetailed('H2SO4');
+// { molarMass: 98.08, breakdown: { H: {...}, S: {...}, O: {...} } }
+```
+
+### Oxidation States
+
+```typescript
+import { calculateOxidationStates } from '@nam088/chemical-balancer';
+
+calculateOxidationStates('H2SO4');
+// { oxidationStates: { H: 1, S: 6, O: -2 }, success: true }
+
+calculateOxidationStates('KMnO4');
+// { oxidationStates: { K: 1, Mn: 7, O: -2 }, success: true }
+```
+
+### Gas Laws
+
+```typescript
+import { idealGasLaw, combinedGasLaw, STP } from '@nam088/chemical-balancer';
+
+// Find volume at STP
+idealGasLaw({ P: 1, PUnit: 'atm', n: 1, T: 273.15, TUnit: 'K' });
+// { V: 22.4, solvedFor: 'V', ... }
+
+// Combined gas law
+combinedGasLaw({ P1: 1, V1: 10, T1: 300, P2: 2, T2: 300 });
+// { V2: 5, solvedFor: 'V2', ... }
+```
+
+### pH Calculator
+
+```typescript
+import { calculatePH, strongAcidPH, weakAcidPH, bufferPH } from '@nam088/chemical-balancer';
+
+// From [H+] concentration
+calculatePH(0.001); // { pH: 3, pOH: 11, nature: 'acidic' }
+
+// Strong acids (complete dissociation)
+strongAcidPH(0.1); // { pH: 1, ... }
+
+// Weak acids (with Ka)
+weakAcidPH(0.1, 1.8e-5); // Acetic acid: { pH: 2.87, percentIonization: 1.34 }
+
+// Buffer solutions (Henderson-Hasselbalch)
+bufferPH(4.76, 0.1, 0.15); // 4.94
+```
+
+### Concentration
+
+```typescript
+import { calculateMolarity, calculateDilution, calculateMolality } from '@nam088/chemical-balancer';
+
+calculateMolarity(0.5, 2); // { molarity: 0.25 }
+
+// Dilution: M1V1 = M2V2
+calculateDilution({ M1: 6, V1: 0.01, M2: 2 });
+// { V2: 0.03, volumeToAdd: 0.02 }
+```
+
+### Empirical Formula
+
+```typescript
+import { calculateEmpiricalFormula, calculateMolecularFormula } from '@nam088/chemical-balancer';
+
+// From percentage composition
+calculateEmpiricalFormula([
+  { element: 'C', mass: 40.0, unit: 'percent' },
+  { element: 'H', mass: 6.7, unit: 'percent' },
+  { element: 'O', mass: 53.3, unit: 'percent' }
+]);
+// { formula: 'CH2O', molarMass: 30.03 }
+
+// Molecular formula from empirical + molar mass
+calculateMolecularFormula('CH2O', 180.16);
+// { formula: 'C6H12O6', multiplier: 6 }
 ```
 
 ### Stoichiometry
@@ -43,7 +127,6 @@ calculateMolarMass('NaCl');    // 58.44
 ```typescript
 import { calculateStoichiometry } from '@nam088/chemical-balancer';
 
-// How many grams of H2O from 2 moles of H2?
 const result = calculateStoichiometry({
   equation: 'H2 + O2 -> H2O',
   given: { molecule: 'H2', amount: 2, unit: 'mol' },
@@ -65,32 +148,31 @@ const result = findLimitingReagent({
   ]
 });
 console.log(result.limiting); // 'O2'
-console.log(result.excess);   // [{ molecule: 'H2', remaining: 2 }]
 ```
 
-### Classify Reactions
+## API Reference
 
-```typescript
-import { classifyReaction } from '@nam088/chemical-balancer';
-
-classifyReaction('CH4 + O2 -> CO2 + H2O');
-// { type: 'combustion', confidence: 0.95 }
-
-classifyReaction('HCl + NaOH -> NaCl + H2O');
-// { type: 'acid-base', confidence: 0.9 }
-```
-
-### Parse with State Annotations
-
-```typescript
-import { Parser } from '@nam088/chemical-balancer';
-
-Parser.parseFormulaWithState('H2O(l)');
-// { elements: { H: 2, O: 1 }, state: 'l' }
-
-Parser.parseFormulaWithState('NaCl(aq)');
-// { elements: { Na: 1, Cl: 1 }, state: 'aq' }
-```
+| Function | Description |
+|----------|-------------|
+| `ChemicalBalancer.balance(eq)` | Balance a chemical equation |
+| `calculateMolarMass(formula)` | Get molar mass in g/mol |
+| `calculateMolarMassDetailed(formula)` | Molar mass with element breakdown |
+| `calculateOxidationStates(formula)` | Get oxidation states |
+| `calculateStoichiometry(input)` | Mol/gram conversions |
+| `findLimitingReagent(input)` | Find limiting reagent |
+| `classifyReaction(eq)` | Classify reaction type |
+| `isRedoxReaction(eq)` | Check if reaction is redox |
+| `idealGasLaw(input)` | Solve PV=nRT |
+| `combinedGasLaw(input)` | P1V1/T1 = P2V2/T2 |
+| `calculatePH(H+)` | pH from H+ concentration |
+| `strongAcidPH(conc)` | pH of strong acid |
+| `weakAcidPH(conc, Ka)` | pH of weak acid |
+| `bufferPH(pKa, acid, base)` | Buffer pH |
+| `calculateMolarity(mol, L)` | Calculate molarity |
+| `calculateDilution(input)` | Dilution calculation |
+| `calculateEmpiricalFormula(comp)` | Empirical formula |
+| `calculateMolecularFormula(emp, mass)` | Molecular formula |
+| `setLocale(locale)` | Set language ('en' or 'vi') |
 
 ## Advanced: The Monster Equation
 
@@ -102,38 +184,19 @@ const result = ChemicalBalancer.balance(input);
 // Coefficients up to 1879!
 ```
 
-## API Reference
-
-| Function | Description |
-|----------|-------------|
-| `ChemicalBalancer.balance(eq)` | Balance a chemical equation |
-| `calculateMolarMass(formula)` | Get molar mass in g/mol |
-| `calculateMolarMassDetailed(formula)` | Molar mass with element breakdown |
-| `calculateStoichiometry(input)` | Mol/gram conversions |
-| `findLimitingReagent(input)` | Find limiting reagent |
-| `classifyReaction(eq)` | Classify reaction type |
-| `Parser.parseFormula(formula)` | Parse to element counts |
-| `Parser.parseFormulaWithState(formula)` | Parse with state annotation |
-| `isValidElement(symbol)` | Check if element exists |
-| `setLocale(locale)` | Set language ('en' or 'vi') |
-
 ## Internationalization (i18n)
 
-The library supports English and Vietnamese for error messages and reaction classification:
+The library supports English and Vietnamese:
 
 ```typescript
 import { setLocale, classifyReaction } from '@nam088/chemical-balancer';
 
-// Default: English
+setLocale('vi'); // Switch to Vietnamese
 classifyReaction('CH4 + O2 -> CO2 + H2O');
-// { typeName: 'Combustion', reason: 'Reaction involves O2...' }
-
-// Switch to Vietnamese
-setLocale('vi');
-classifyReaction('CH4 + O2 -> CO2 + H2O');
-// { typeName: 'Phản ứng đốt cháy', reason: 'Phản ứng có O2...' }
+// { typeName: 'Phản ứng đốt cháy', ... }
 ```
 
 ## License
 
 MIT
+

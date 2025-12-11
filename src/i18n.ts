@@ -7,6 +7,7 @@ export type Locale = 'en' | 'vi';
  * Translation keys used in the library.
  */
 export type MessageKey =
+  // Error messages
   | 'error.empty_equation'
   | 'error.missing_separator'
   | 'error.multiple_separators'
@@ -20,6 +21,11 @@ export type MessageKey =
   | 'error.unknown_element_molar_mass'
   | 'error.balance_failed'
   | 'error.molecule_not_found'
+  | 'error.calculation_error'
+  | 'error.invalid_input'
+  | 'error.positive_required'
+  | 'error.missing_variables'
+  | 'error.invalid_dilution'
   // Reaction types
   | 'reaction.combustion'
   | 'reaction.acid-base'
@@ -49,7 +55,55 @@ export type MessageKey =
   | 'step.mole_ratio'
   | 'step.convert_to_grams'
   // Limiting reagent
-  | 'step.limiting_explanation';
+  | 'step.limiting_explanation'
+  // Oxidation state messages
+  | 'oxidation.calculated'
+  | 'oxidation.element_state'
+  | 'oxidation.oxidized'
+  | 'oxidation.reduced'
+  | 'oxidation.unchanged'
+  | 'oxidation.electrons_lost'
+  | 'oxidation.electrons_gained'
+  // Gas law messages
+  | 'gas.ideal_gas_law'
+  | 'gas.combined_gas_law'
+  | 'gas.solved_for'
+  | 'gas.pressure'
+  | 'gas.volume'
+  | 'gas.moles'
+  | 'gas.temperature'
+  | 'gas.stp_conditions'
+  // Concentration messages
+  | 'concentration.molarity'
+  | 'concentration.molality'
+  | 'concentration.dilution'
+  | 'concentration.mole_fraction'
+  | 'concentration.ppm'
+  | 'concentration.mass_needed'
+  // pH messages
+  | 'ph.acidic'
+  | 'ph.basic'
+  | 'ph.neutral'
+  | 'ph.strong_acid'
+  | 'ph.strong_base'
+  | 'ph.weak_acid'
+  | 'ph.weak_base'
+  | 'ph.buffer'
+  | 'ph.percent_ionization'
+  // Formula calculator messages
+  | 'formula.empirical'
+  | 'formula.molecular'
+  | 'formula.percent_composition'
+  | 'formula.moles_calculated'
+  | 'formula.ratio_calculated'
+  | 'formula.multiplier'
+  // Redox messages
+  | 'redox.oxidation_half'
+  | 'redox.reduction_half'
+  | 'redox.oxidizing_agent'
+  | 'redox.reducing_agent'
+  | 'redox.electrons_transferred'
+  | 'redox.balanced';
 
 /**
  * Translations for all supported locales.
@@ -98,6 +152,60 @@ const translations: Record<Locale, Record<MessageKey, string>> = {
     'step.mole_ratio': 'Mole ratio: {givenMol} mol × ({findCoeff}/{givenCoeff}) = {result} mol {find}',
     'step.convert_to_grams': 'Convert to grams: {mol} mol × {molarMass} g/mol = {result} g',
     'step.limiting_explanation': '{limiting} is limiting because it supports only {reactions} complete reactions.',
+    // Error messages (new)
+    'error.calculation_error': 'Calculation error: {message}',
+    'error.invalid_input': 'Invalid input: {message}',
+    'error.positive_required': 'Value must be positive',
+    'error.missing_variables': 'Missing required variables: {variables}',
+    'error.invalid_dilution': 'Invalid dilution: final concentration cannot exceed initial',
+    // Oxidation state messages
+    'oxidation.calculated': 'Oxidation states calculated for {formula}',
+    'oxidation.element_state': '{element}: {state}',
+    'oxidation.oxidized': '{element} is oxidized (lost {electrons} electron(s))',
+    'oxidation.reduced': '{element} is reduced (gained {electrons} electron(s))',
+    'oxidation.unchanged': '{element} oxidation state unchanged',
+    'oxidation.electrons_lost': 'Electrons lost: {count}',
+    'oxidation.electrons_gained': 'Electrons gained: {count}',
+    // Gas law messages
+    'gas.ideal_gas_law': 'Ideal Gas Law: PV = nRT',
+    'gas.combined_gas_law': 'Combined Gas Law: P1V1/T1 = P2V2/T2',
+    'gas.solved_for': 'Solved for {variable}: {value}',
+    'gas.pressure': 'Pressure: {value} {unit}',
+    'gas.volume': 'Volume: {value} {unit}',
+    'gas.moles': 'Moles: {value} mol',
+    'gas.temperature': 'Temperature: {value} {unit}',
+    'gas.stp_conditions': 'Standard Temperature and Pressure (STP): 273.15 K, 1 atm',
+    // Concentration messages
+    'concentration.molarity': 'Molarity: {molarity} M',
+    'concentration.molality': 'Molality: {molality} m',
+    'concentration.dilution': 'Dilution: M1V1 = M2V2',
+    'concentration.mole_fraction': 'Mole fraction: {solute} (solute), {solvent} (solvent)',
+    'concentration.ppm': 'Concentration: {ppm} ppm',
+    'concentration.mass_needed': 'Mass needed: {mass} g',
+    // pH messages
+    'ph.acidic': 'Acidic solution (pH < 7)',
+    'ph.basic': 'Basic solution (pH > 7)',
+    'ph.neutral': 'Neutral solution (pH = 7)',
+    'ph.strong_acid': 'Strong acid: complete dissociation',
+    'ph.strong_base': 'Strong base: complete dissociation',
+    'ph.weak_acid': 'Weak acid: partial dissociation (Ka = {ka})',
+    'ph.weak_base': 'Weak base: partial dissociation (Kb = {kb})',
+    'ph.buffer': 'Buffer solution (Henderson-Hasselbalch equation)',
+    'ph.percent_ionization': 'Percent ionization: {percent}%',
+    // Formula calculator messages
+    'formula.empirical': 'Empirical formula: {formula}',
+    'formula.molecular': 'Molecular formula: {formula}',
+    'formula.percent_composition': 'Percent composition: {composition}',
+    'formula.moles_calculated': '{element}: {mass}g ÷ {atomicMass} g/mol = {moles} mol',
+    'formula.ratio_calculated': 'Mole ratio: {ratio}',
+    'formula.multiplier': 'Multiplier (n): {n}',
+    // Redox messages
+    'redox.oxidation_half': 'Oxidation half-reaction: {equation}',
+    'redox.reduction_half': 'Reduction half-reaction: {equation}',
+    'redox.oxidizing_agent': 'Oxidizing agent: {agent}',
+    'redox.reducing_agent': 'Reducing agent: {agent}',
+    'redox.electrons_transferred': 'Electrons transferred: {count}',
+    'redox.balanced': 'Balanced redox equation: {equation}',
   },
   vi: {
     'error.empty_equation': 'Phương trình rỗng',
@@ -142,6 +250,60 @@ const translations: Record<Locale, Record<MessageKey, string>> = {
     'step.mole_ratio': 'Tỉ lệ mol: {givenMol} mol × ({findCoeff}/{givenCoeff}) = {result} mol {find}',
     'step.convert_to_grams': 'Chuyển đổi sang gam: {mol} mol × {molarMass} g/mol = {result} g',
     'step.limiting_explanation': '{limiting} là chất giới hạn vì chỉ đủ cho {reactions} phản ứng hoàn toàn.',
+    // Error messages (new)
+    'error.calculation_error': 'Lỗi tính toán: {message}',
+    'error.invalid_input': 'Đầu vào không hợp lệ: {message}',
+    'error.positive_required': 'Giá trị phải dương',
+    'error.missing_variables': 'Thiếu biến bắt buộc: {variables}',
+    'error.invalid_dilution': 'Pha loãng không hợp lệ: nồng độ cuối không thể lớn hơn nồng độ đầu',
+    // Oxidation state messages
+    'oxidation.calculated': 'Số oxi-hóa đã tính cho {formula}',
+    'oxidation.element_state': '{element}: {state}',
+    'oxidation.oxidized': '{element} bị oxi-hóa (mất {electrons} electron)',
+    'oxidation.reduced': '{element} bị khử (nhận {electrons} electron)',
+    'oxidation.unchanged': 'Số oxi-hóa của {element} không đổi',
+    'oxidation.electrons_lost': 'Số electron mất: {count}',
+    'oxidation.electrons_gained': 'Số electron nhận: {count}',
+    // Gas law messages
+    'gas.ideal_gas_law': 'Phương trình khí lý tưởng: PV = nRT',
+    'gas.combined_gas_law': 'Định luật khí kết hợp: P1V1/T1 = P2V2/T2',
+    'gas.solved_for': 'Giải cho {variable}: {value}',
+    'gas.pressure': 'Áp suất: {value} {unit}',
+    'gas.volume': 'Thể tích: {value} {unit}',
+    'gas.moles': 'Số mol: {value} mol',
+    'gas.temperature': 'Nhiệt độ: {value} {unit}',
+    'gas.stp_conditions': 'Điều kiện tiêu chuẩn (STP): 273.15 K, 1 atm',
+    // Concentration messages
+    'concentration.molarity': 'Nồng độ mol: {molarity} M',
+    'concentration.molality': 'Nồng độ molan: {molality} m',
+    'concentration.dilution': 'Pha loãng: M1V1 = M2V2',
+    'concentration.mole_fraction': 'Phần mol: {solute} (chất tan), {solvent} (dung môi)',
+    'concentration.ppm': 'Nồng độ: {ppm} ppm',
+    'concentration.mass_needed': 'Khối lượng cần: {mass} g',
+    // pH messages
+    'ph.acidic': 'Dung dịch acid (pH < 7)',
+    'ph.basic': 'Dung dịch base (pH > 7)',
+    'ph.neutral': 'Dung dịch trung tính (pH = 7)',
+    'ph.strong_acid': 'Acid mạnh: phân ly hoàn toàn',
+    'ph.strong_base': 'Base mạnh: phân ly hoàn toàn',
+    'ph.weak_acid': 'Acid yếu: phân ly một phần (Ka = {ka})',
+    'ph.weak_base': 'Base yếu: phân ly một phần (Kb = {kb})',
+    'ph.buffer': 'Dung dịch đệm (phương trình Henderson-Hasselbalch)',
+    'ph.percent_ionization': 'Phần trăm ion hóa: {percent}%',
+    // Formula calculator messages
+    'formula.empirical': 'Công thức thực nghiệm: {formula}',
+    'formula.molecular': 'Công thức phân tử: {formula}',
+    'formula.percent_composition': 'Phần trăm thành phần: {composition}',
+    'formula.moles_calculated': '{element}: {mass}g ÷ {atomicMass} g/mol = {moles} mol',
+    'formula.ratio_calculated': 'Tỉ lệ mol: {ratio}',
+    'formula.multiplier': 'Bội số (n): {n}',
+    // Redox messages
+    'redox.oxidation_half': 'Nửa phản ứng oxi-hóa: {equation}',
+    'redox.reduction_half': 'Nửa phản ứng khử: {equation}',
+    'redox.oxidizing_agent': 'Chất oxi-hóa: {agent}',
+    'redox.reducing_agent': 'Chất khử: {agent}',
+    'redox.electrons_transferred': 'Số electron trao đổi: {count}',
+    'redox.balanced': 'Phương trình oxi-hóa khử cân bằng: {equation}',
   },
 };
 
