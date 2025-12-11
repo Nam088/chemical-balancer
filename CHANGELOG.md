@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/Nam088/chemical-balancer/compare/v1.1.0...v1.2.0) (2025-12-11)
+
+
+### Features
+
+* add comprehensive i18n support and improve test coverage ([711cb87](https://github.com/Nam088/chemical-balancer/commit/711cb8709458e8e14069a1e74135851a65b93eef))
+
 # [1.1.0](https://github.com/Nam088/chemical-balancer/compare/v1.0.1...v1.1.0) (2025-12-11)
 
 
